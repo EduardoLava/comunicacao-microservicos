@@ -24,12 +24,21 @@ ext {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-//	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation ('org.springframework.boot:spring-boot-starter-data-jpa'){
+		exclude module: "hibernate-core"
+	}
+	implementation 'org.hibernate:hibernate-core:5.6.5.Final' // Ref: https://stackoverflow.com/questions/71642208/parameter-value-gabrek-did-not-match-expected-type-java-lang-character-n-a
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-//	runtimeOnly 'org.postgresql:postgresql'
+	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
