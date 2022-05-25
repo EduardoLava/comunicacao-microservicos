@@ -1,8 +1,6 @@
 package br.com.curso.udemy.productapi.modules.controller;
 
-import br.com.curso.udemy.productapi.modules.dto.ProductRequest;
-import br.com.curso.udemy.productapi.modules.dto.ProductResponse;
-import br.com.curso.udemy.productapi.modules.dto.ProductSalesResopnse;
+import br.com.curso.udemy.productapi.modules.dto.*;
 import br.com.curso.udemy.productapi.modules.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +52,11 @@ public class ProductController {
     @DeleteMapping("{id}")
     public void deleteById(@PathVariable Integer id) {
         productService.delete(id);
+    }
+
+    @PostMapping("check-stock")
+    public void checkProductsStock(@RequestBody ProductCheckStockRequestDTO request){
+        this.productService.checkProductsStock(request);
     }
 
     @GetMapping("{id}/sales")
