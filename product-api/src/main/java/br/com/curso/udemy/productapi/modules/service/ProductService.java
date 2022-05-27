@@ -210,6 +210,7 @@ public class ProductService {
                     .orElseThrow(() -> new ValidationException("The sales was not found by this product"));
             return ProductSalesResopnse.of(product, sales.getSalesIds());
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ValidationException("There was an error trying to get the product's sales."+ e.getMessage());
         }
     }
@@ -226,6 +227,7 @@ public class ProductService {
             throw new ValidationException("Product ID and quantity must be informed");
         }
         var product = findById(productQuantity.getProductId());
+        log.info("Quantity available "+product.getQuantityAvailable()+", quantity order: "+productQuantity.getQuantity());
         if(product.getQuantityAvailable() < productQuantity.getQuantity()){
             throw new ValidationException(String.format("The product %s is out of stock", product.getId()));
         }

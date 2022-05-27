@@ -2,11 +2,13 @@ package br.com.curso.udemy.productapi.modules.controller;
 
 import br.com.curso.udemy.productapi.modules.dto.*;
 import br.com.curso.udemy.productapi.modules.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/product")
 public class ProductController {
@@ -56,6 +58,7 @@ public class ProductController {
 
     @PostMapping("check-stock")
     public void checkProductsStock(@RequestBody ProductCheckStockRequestDTO request){
+        log.info("Check stock, info: {}", request);
         this.productService.checkProductsStock(request);
     }
 
