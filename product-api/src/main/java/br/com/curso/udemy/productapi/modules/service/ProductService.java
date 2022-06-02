@@ -8,6 +8,8 @@ import br.com.curso.udemy.productapi.modules.sales.client.SalesClient;
 import br.com.curso.udemy.productapi.modules.sales.dto.SalesConfirmationDTO;
 import br.com.curso.udemy.productapi.modules.sales.enums.SalesStatus;
 import br.com.curso.udemy.productapi.modules.sales.rabbit.SalesConfirmationSender;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -19,11 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static br.com.curso.udemy.productapi.config.RequestUtil.*;
+
 @Slf4j
 @Service
 public class ProductService {
 
     private static final Integer ZERO = 0;
+    private static final String TRANSACTION_ID = "transactionid";
+    private static final String SERVICE_ID = "serviceid";
 
     @Autowired
     private ProductRepository productRepository;
@@ -153,7 +159,8 @@ public class ProductService {
             log.error("Error whiling trying to update stock for message error: " + exception.getMessage(), exception);
             sender.sendSalesConfirmationMessage(new SalesConfirmationDTO(
                     productStockDTO.getSalesId(),
-                    SalesStatus.REJECTED
+                    SalesStatus.REJECTED,
+                    productStockDTO.getTransactionid()
             ));
         }
     }
@@ -171,7 +178,10 @@ public class ProductService {
         });
         if (!ObjectUtils.isEmpty(productsForUpdate)) {
             productRepository.saveAll(productsForUpdate);
-            var approvedMessage = new SalesConfirmationDTO(productStockDTO.getSalesId(), SalesStatus.APPROVED);
+            var approvedMessage = new SalesConfirmationDTO(
+                    productStockDTO.getSalesId(),
+                    SalesStatus.APPROVED,
+                    productStockDTO.getTransactionid());
             sender.sendSalesConfirmationMessage(approvedMessage);
         }
     }
@@ -206,20 +216,54 @@ public class ProductService {
 
         var product = findById(id);
         try {
+            var currentRequest = getCurrentRequest();
+            var transactionid = currentRequest.getHeader(TRANSACTION_ID);
+            var serviceid = currentRequest.getAttribute(SERVICE_ID);
+            log.info(
+                    "Sending GET request to order by productId with data {} | [transactionId: {} | serviceId: {}]",
+                    product.getId(),
+                    transactionid,
+                    serviceid
+            );
             var sales = salesClient.findSalesByProductId(id)
                     .orElseThrow(() -> new ValidationException("The sales was not found by this product"));
-            return ProductSalesResopnse.of(product, sales.getSalesIds());
+            var response =  ProductSalesResopnse.of(product, sales.getSalesIds());
+            log.info(
+                    "Receiving response to order by productId with data {} | [transactionId: {} | serviceId: {}]",
+                    new ObjectMapper().writeValueAsString(response),
+                    transactionid,
+                    serviceid
+            );
+            return response;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ValidationException("There was an error trying to get the product's sales."+ e.getMessage());
         }
     }
 
-    public void checkProductsStock(ProductCheckStockRequestDTO request){
-        if(ObjectUtils.isEmpty(request) || ObjectUtils.isEmpty(request.getProducts())){
-            throw new ValidationException("The request data must be informed");
+    public void checkProductsStock(ProductCheckStockRequestDTO request) {
+        try{
+            var currentRequest = getCurrentRequest();
+            var transactionid = currentRequest.getHeader(TRANSACTION_ID);
+            var serviceid = currentRequest.getAttribute(SERVICE_ID);
+            log.info(
+                "Request to POST product stock with data {} | [transactionId: {} | serviceId: {}]",
+                new ObjectMapper().writeValueAsString(request),
+                    transactionid,
+                    serviceid
+            );
+            if(ObjectUtils.isEmpty(request) || ObjectUtils.isEmpty(request.getProducts())){
+                throw new ValidationException("The request data must be informed");
+            }
+            request.getProducts().forEach(this::validateStock);
+            log.info(
+                    "Response success to POST product stock | [transactionId: {} | serviceId: {}]",
+                    transactionid,
+                    serviceid
+            );
+        } catch (Exception ex){
+            throw new ValidationException("Error while handling request: "+ex.getMessage());
         }
-        request.getProducts().forEach(this::validateStock);
     }
 
     private void validateStock(ProductQuantityDTO productQuantity){

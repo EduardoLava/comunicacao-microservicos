@@ -10,6 +10,7 @@ export function connectMongoDb() {
         console.error("Error to connect to MongoDB!")
     });
     mongoose.connect(MONGO_DB_URL, {
-        useNewUrlParser: true
+        useNewUrlParser: true,
+        serverSelectionTimeoutMS: 180000
     });
 }

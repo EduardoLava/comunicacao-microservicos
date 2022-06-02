@@ -4,6 +4,7 @@ import { createInitialData } from "./src/config/db/InitialData.js";
 import { connectRabbitMq } from "./src/config/rabbitmq/RabbitConfig.js";
 import CheckToken from "./src/config/auth/CheckToken.js";
 import router from "./src/modules/sales/routes/OrderRoutes.js";
+import Tracing from "./src/config/Tracing.js";
 
 const app = express();
 const env = process.env;
@@ -12,6 +13,8 @@ const PORT = env.PORT || 8082;
 connectMongoDb();
 createInitialData();
 connectRabbitMq();
+
+app.use(Tracing)
 
 app.get('/api/status', (req, res) => {
     return res.status(200).json({
