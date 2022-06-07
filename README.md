@@ -99,12 +99,6 @@ Recieving message from queue: {"salesId":"6165b92addaf7fc9dd85dad0","status":"AP
 Documentação dos endpoints
 A documentação da API se faz presente no arquivo API_DOCS.md.
 
-Deploy no Heroku
-As 3 APIs foram publicadas no Heroku, o repositório que foram publicados são esses:
-
-Auth-API - https://github.com/vhnegrisoli2018/auth-api (PostgreSQL e Coralogix Logging)
-Product-API - https://github.com/vhnegrisoli2018/product-api (Coralogix Logging, Cloud MongoDB e CloudAQMP)
-Sales-API - https://github.com/vhnegrisoli2018/sales-api (Coralogix Logging Heroku Postgres e CloudAQMP)
 As URL base são:
 
 Auth-API - https://microsservicos-auth-api.herokuapp.com/
